@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "license": "MIT",
     "type": "module",
-    "main": "src/server.ts",
+    "main": "src/index.ts",
     "keywords": [
         "dayz",
         "servers",
@@ -20,7 +20,8 @@
         "dev": "node --env-file=.env --watch src/index.ts",
         "build": "tsc",
         "start": "node --env-file=.env build/index.js",
-        "test": "node --test 'test/**/*.test.ts'",
+        "test": "node --env-file=.env --test 'test/**/*.test.ts'",
+        "test:coverage": "node --test --experimental-test-coverage 'test/**/*.test.ts'",
         "format": "prettier --write ."
     },
     "dependencies": {

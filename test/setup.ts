@@ -5,7 +5,7 @@ import { buildApp } from '../src/app.ts';
 let app: FastifyInstance;
 
 before(async () => {
-    app = await buildApp();
+    app = await buildApp({ isTest: true });
 });
 
 after(async () => {

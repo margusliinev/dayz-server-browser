@@ -2,14 +2,12 @@ import { buildApp } from './app.ts';
 
 const start = async () => {
     try {
-        const PORT = process.env.PORT || '3000';
-        const app = await buildApp();
+        const PORT = parseInt(process.env.PORT || '3000');
+        const app = await buildApp({ isTest: false });
 
-        await app.listen({ port: parseInt(PORT || '3000') });
-
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        await app.listen({ port: PORT, host: '0.0.0.0' });
     } catch (err) {
-        console.error('Error starting server:', err);
+        console.error(err);
         process.exit(1);
     }
 };
