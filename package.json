@@ -20,7 +20,7 @@
         "dev": "node --env-file=.env --watch src/index.ts",
         "build": "tsc",
         "start": "node --env-file=.env build/index.js",
-        "test": "node --test ./test/**/*.test.ts",
+        "test": "node --test 'test/**/*.test.ts'",
         "format": "prettier --write ."
     },
     "dependencies": {
