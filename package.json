@@ -17,16 +17,20 @@
         "url": "https://github.com/margusliinev/dayz-server-browser"
     },
     "scripts": {
-        "dev": "node --env-file=.env --watch src/server.ts",
+        "dev": "node --env-file=.env --watch src/index.ts",
         "build": "tsc",
-        "start": "node --env-file=.env build/server.js",
+        "start": "node --env-file=.env build/index.js",
+        "test": "node --test ./test/**/*.test.ts",
         "format": "prettier --write ."
     },
     "dependencies": {
+        "@fastify/autoload": "6.3.1",
+        "@sinclair/typebox": "0.34.38",
         "fastify": "5.4.0"
     },
     "devDependencies": {
         "@types/node": "24.1.0",
+        "pino-pretty": "13.0.0",
         "prettier": "3.6.2",
         "typescript": "5.8.3"
     }
