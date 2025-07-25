@@ -1,0 +1,33 @@
+{
+    "name": "dayz-server-browser-api",
+    "description": "API for DayZ server browser",
+    "author": "Margus Liinev",
+    "version": "1.0.0",
+    "license": "MIT",
+    "type": "module",
+    "main": "src/server.ts",
+    "keywords": [
+        "dayz",
+        "servers",
+        "browser",
+        "api"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/margusliinev/dayz-server-browser"
+    },
+    "scripts": {
+        "dev": "node --env-file=.env --watch src/server.ts",
+        "build": "tsc",
+        "start": "node --env-file=.env build/server.js",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "fastify": "5.4.0"
+    },
+    "devDependencies": {
+        "@types/node": "24.1.0",
+        "prettier": "3.6.2",
+        "typescript": "5.8.3"
+    }
+}
