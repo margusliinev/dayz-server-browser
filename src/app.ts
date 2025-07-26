@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify';
-import fastify from 'fastify';
-import autoload from '@fastify/autoload';
-import { fileURLToPath } from 'url';
+import { logger } from './helpers/logger.ts';
 import { dirname, join } from 'path';
-import { config } from './helpers/logger.ts';
+import { fileURLToPath } from 'url';
+import autoload from '@fastify/autoload';
+import fastify from 'fastify';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,7 +13,7 @@ export async function buildApp({ isTest }: { isTest: boolean }): Promise<Fastify
         process.env.NODE_ENV = 'test';
     }
 
-    const app = fastify({ logger: config, disableRequestLogging: true });
+    const app = fastify({ logger, disableRequestLogging: true });
 
     await app.register(autoload, {
         dir: join(__dirname, 'routes'),

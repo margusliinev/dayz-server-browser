@@ -1,6 +1,6 @@
 import pino from 'pino';
 
-export const config = {
+export const logger = {
     base: null,
     level: process.env.NODE_ENV === 'test' ? 'silent' : 'info',
     timestamp: pino.stdTimeFunctions.isoTime,
