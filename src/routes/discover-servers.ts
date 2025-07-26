@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { queryMasterServer, REGIONS } from 'steam-server-query';
-import { db } from '../database/index.ts';
 import { serversTable } from '../database/schema.ts';
+import { db } from '../database/index.ts';
 
 const discoverServers: FastifyPluginAsync = async (app: FastifyInstance) => {
     app.get('/discover-servers', {

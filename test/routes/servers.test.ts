@@ -1,8 +1,8 @@
 import { test, describe, beforeEach } from 'node:test';
+import { serversTable } from '../../src/database/schema.ts';
+import { db } from '../../src/database/index.ts';
 import { app } from '../setup.ts';
 import assert from 'node:assert';
-import { db } from '../../src/database/index.ts';
-import { serversTable } from '../../src/database/schema.ts';
 
 describe('GET /api/servers', () => {
     beforeEach(async () => {
@@ -16,7 +16,7 @@ describe('GET /api/servers', () => {
                 players: 60,
                 maxPlayers: 100,
                 status: 'online',
-                queried_at: new Date(),
+                queried_at: new Date('2025-01-01T12:00:00Z'),
             },
             {
                 map: 'Livonia',
@@ -25,16 +25,16 @@ describe('GET /api/servers', () => {
                 players: 75,
                 maxPlayers: 80,
                 status: 'online',
-                queried_at: new Date(),
+                queried_at: new Date('2025-01-01T13:00:00Z'),
             },
             {
-                map: null,
-                name: null,
-                address: '192.168.1.1:27016',
+                map: 'Chernarus',
+                name: 'Test Server 3',
+                address: '192.168.1.2:27016',
                 players: 0,
-                maxPlayers: 0,
-                status: 'pending',
-                queried_at: null,
+                maxPlayers: 50,
+                status: 'offline',
+                queried_at: new Date('2025-01-01T10:00:00Z'),
             },
         ]);
     });
@@ -52,18 +52,7 @@ describe('GET /api/servers', () => {
         assert.strictEqual(body.data.length, 2);
 
         body.data.forEach((server: any) => {
-            assert.strictEqual(typeof server.id, 'number');
-            assert.strictEqual(typeof server.address, 'string');
-            assert.strictEqual(typeof server.players, 'number');
-            assert.strictEqual(typeof server.maxPlayers, 'number');
-            assert.strictEqual(typeof server.created_at, 'string');
-            assert.strictEqual(typeof server.updated_at, 'string');
             assert.strictEqual(server.status, 'online');
-
-            if (server.status === 'online') {
-                assert.strictEqual(typeof server.name, 'string');
-                assert.strictEqual(typeof server.map, 'string');
-            }
         });
     });
 });

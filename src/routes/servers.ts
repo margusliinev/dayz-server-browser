@@ -29,14 +29,14 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
                 200: ServersResponseSchema,
             },
         },
-        handler: async (request) => {
+        handler: async (request, reply) => {
             try {
                 const onlineServers = await db.select().from(serversTable).where(eq(serversTable.status, 'online'));
 
-                return {
+                return reply.status(200).send({
                     success: true,
                     data: onlineServers,
-                };
+                });
             } catch (error) {
                 request.log.error(error, 'Failed to fetch servers');
                 throw error;

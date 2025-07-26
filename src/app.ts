@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { runMigrations } from './database/index.ts';
 import { logger } from './helpers/logger.ts';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -14,6 +15,8 @@ export async function buildApp({ isTest }: { isTest: boolean }): Promise<Fastify
         process.env.NODE_ENV = 'test';
         process.env.DATABASE_URL = 'mysql://user:password@localhost:3307/db_test';
     }
+
+    await runMigrations();
 
     const app = fastify({ logger, disableRequestLogging: true });
 

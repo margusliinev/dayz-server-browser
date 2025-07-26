@@ -6,17 +6,17 @@ declare global {
     var db: MySql2Database | undefined;
 }
 
-const pool = mysql.createPool({
+const client = await mysql.createConnection({
     uri: process.env.DATABASE_URL,
-    connectionLimit: 10,
+    connectionLimit: 50,
 });
 
 let db: MySql2Database;
 
 if (process.env.NODE_ENV === 'production') {
-    db = drizzle({ client: pool });
+    db = drizzle({ client });
 } else {
-    if (!global.db) global.db = drizzle({ client: pool });
+    if (!global.db) global.db = drizzle({ client });
     db = global.db;
 }
 
