@@ -1,6 +1,7 @@
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { useState, useMemo } from 'react';
 import { Pagination } from '@/components/ui/pagination';
+import { ServerTableFilter } from '@/components/ui/server-table-filter';
 import type { Server } from '@backend/database/schema';
 import { columns } from '@/components/ui/table-columns';
 import { TableHeaderCell, TableEmptyState } from '@/components/ui';
@@ -12,10 +13,16 @@ interface ServerTableProps {
 export function ServerTable({ servers }: ServerTableProps) {
     const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState([{ id: 'players', desc: true }]);
+    const [filter, setFilter] = useState('');
     const pageSize = 15;
 
+    const filteredServers = useMemo(() => {
+        if (!filter.trim()) return servers;
+        return servers.filter((s) => s.name?.toLowerCase().includes(filter.trim().toLowerCase()));
+    }, [servers, filter]);
+
     const sortingTable = useReactTable({
-        data: servers,
+        data: filteredServers,
         columns,
         state: { sorting },
         onSortingChange: setSorting,
@@ -64,6 +71,13 @@ export function ServerTable({ servers }: ServerTableProps) {
 
     return (
         <div className='bg-gray-900 rounded-lg border border-gray-800 overflow-hidden'>
+            <ServerTableFilter
+                value={filter}
+                onChange={(val) => {
+                    setFilter(val);
+                    setPage(1);
+                }}
+            />
             <div className='overflow-x-auto'>
                 <table className='w-full'>
                     <thead>
