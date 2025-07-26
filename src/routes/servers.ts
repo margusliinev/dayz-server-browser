@@ -6,9 +6,9 @@ import { eq } from 'drizzle-orm';
 
 const ServerSchema = Type.Object({
     id: Type.Number(),
-    address: Type.String({ maxLength: 255 }),
-    name: Type.Union([Type.String({ maxLength: 255 }), Type.Null()]),
     map: Type.Union([Type.String({ maxLength: 255 }), Type.Null()]),
+    name: Type.Union([Type.String({ maxLength: 255 }), Type.Null()]),
+    address: Type.String({ maxLength: 255 }),
     players: Type.Number({ minimum: 0 }),
     maxPlayers: Type.Number({ minimum: 0 }),
     status: Type.Union([Type.Literal('pending'), Type.Literal('online'), Type.Literal('offline')]),

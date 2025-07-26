@@ -6,7 +6,7 @@ describe('App', () => {
     test('should return 200 response with success true and ok', async () => {
         const response = await app.inject({
             method: 'GET',
-            url: '/health',
+            url: '/api/health',
         });
 
         const body = await response.json();
