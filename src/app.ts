@@ -41,7 +41,7 @@ export async function buildApp({ isTest }: { isTest: boolean }): Promise<Fastify
     app.setNotFoundHandler(async (_request, reply) => {
         return reply.status(404).send({
             success: false,
-            message: 'Route not found',
+            message: 'Not Found',
         });
     });
 

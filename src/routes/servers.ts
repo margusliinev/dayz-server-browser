@@ -1,12 +1,16 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import type { Server } from '../database/schema.ts';
 import { Type } from '@sinclair/typebox';
 
 const ServerSchema = Type.Object({
-    id: Type.String(),
-    name: Type.String(),
-    players: Type.Number(),
-    maxPlayers: Type.Number(),
-    map: Type.String(),
+    id: Type.Number(),
+    map: Type.String({ maxLength: 255 }),
+    name: Type.String({ maxLength: 255 }),
+    address: Type.String({ maxLength: 255 }),
+    players: Type.Number({ minimum: 0 }),
+    maxPlayers: Type.Number({ minimum: 0 }),
+    created_at: Type.String({ format: 'date-time' }),
+    updated_at: Type.String({ format: 'date-time' }),
 });
 
 const ServersResponseSchema = Type.Object({
@@ -14,30 +18,34 @@ const ServersResponseSchema = Type.Object({
     data: Type.Array(ServerSchema),
 });
 
-const servers: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-    fastify.get('/servers', {
+const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
+    app.get('/servers', {
         schema: {
             response: {
                 200: ServersResponseSchema,
             },
         },
         handler: async () => {
-            const servers = [
+            const servers: Server[] = [
                 {
-                    id: '1',
-                    name: 'Official DayZ Server',
-                    players: 45,
-                    maxPlayers: 60,
+                    id: 1,
                     map: 'Chernarus',
-                    status: 'online',
+                    name: 'Mega DayZ Server',
+                    address: '193.25.252.55:27016',
+                    players: 60,
+                    maxPlayers: 100,
+                    created_at: new Date(),
+                    updated_at: new Date(),
                 },
                 {
-                    id: '2',
-                    name: 'Community Server',
-                    players: 30,
-                    maxPlayers: 50,
+                    id: 2,
                     map: 'Livonia',
-                    status: 'online',
+                    name: 'Super DayZ Server',
+                    address: '193.25.252.82:27016',
+                    players: 75,
+                    maxPlayers: 80,
+                    created_at: new Date(),
+                    updated_at: new Date(),
                 },
             ];
 
