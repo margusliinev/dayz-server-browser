@@ -1,4 +1,6 @@
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import { useState, useMemo } from 'react';
+import { Pagination } from '@/components/ui/pagination';
 import type { Server } from '@backend/database/schema';
 import { columns } from '@/components/ui/table-columns';
 import { TableHeaderCell, TableEmptyState } from '@/components/ui';
@@ -8,11 +10,19 @@ interface ServerTableProps {
 }
 
 export function ServerTable({ servers }: ServerTableProps) {
-    const table = useReactTable({
+    const [page, setPage] = useState(1);
+    const [sorting, setSorting] = useState([{ id: 'players', desc: true }]);
+    const pageSize = 15;
+
+    const sortingTable = useReactTable({
         data: servers,
         columns,
+        state: { sorting },
+        onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        manualPagination: true,
+        manualSorting: false,
         initialState: {
             sorting: [
                 {
@@ -22,6 +32,35 @@ export function ServerTable({ servers }: ServerTableProps) {
             ],
         },
     });
+
+    const sortedServers = sortingTable.getSortedRowModel().rows.map((row) => row.original);
+    const totalPages = Math.max(1, Math.ceil(sortedServers.length / pageSize));
+
+    const paginatedServers = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        return sortedServers.slice(start, start + pageSize);
+    }, [sortedServers, page]);
+
+    const table = useReactTable({
+        data: paginatedServers,
+        columns,
+        state: { sorting },
+        onSortingChange: setSorting,
+        getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        manualPagination: true,
+        manualSorting: false,
+        initialState: {
+            sorting: [
+                {
+                    id: 'players',
+                    desc: true,
+                },
+            ],
+        },
+    });
+
+    if (page > totalPages) setPage(1);
 
     return (
         <div className='bg-gray-900 rounded-lg border border-gray-800 overflow-hidden'>
@@ -49,6 +88,8 @@ export function ServerTable({ servers }: ServerTableProps) {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination page={page} totalPages={totalPages} onPrev={() => setPage((p) => Math.max(1, p - 1))} onNext={() => setPage((p) => Math.min(totalPages, p + 1))} />
 
             {servers.length === 0 && <TableEmptyState message='No servers found' />}
         </div>
