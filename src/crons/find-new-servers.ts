@@ -1,50 +1,83 @@
 import { queryMasterServer, REGIONS } from 'steam-server-query';
+import type { FastifyInstance } from 'fastify';
+import type { NewServer } from '../database/schema.ts';
 import { serversTable } from '../database/schema.ts';
 import { db } from '../database/index.ts';
-import { inArray } from 'drizzle-orm';
-import type { FastifyInstance } from 'fastify';
+
+const MASTER_SERVER_HOST = 'hl2master.steampowered.com:27011';
+const DAYZ_APP_ID = 221100;
+const QUERY_TIMEOUT = 5000;
+const MAX_SERVERS = 3000;
+const BATCH_SIZE = 100;
+const BATCH_DELAY = 1000;
+
+const QUERY_FILTERS = {
+    appid: DAYZ_APP_ID,
+    password: 0 as const, // Non-password protected servers
+    empty: 1 as const, // Non-empty servers
+};
 
 export async function findNewServers(app: FastifyInstance) {
     try {
-        app.log.info('Starting server discovery from Steam master server');
+        const serverAddresses = await queryMasterServer(MASTER_SERVER_HOST, REGIONS.ALL, QUERY_FILTERS, QUERY_TIMEOUT, MAX_SERVERS);
 
-        // DayZ APP ID is 221100
-        // Password 0 means servers that are not password protected
-        // Empty 1 means servers that are not empty
-        // 5000 is the timeout in milliseconds
-        // 500 is the maximum number of servers to return
-        const serverAddresses = await queryMasterServer('hl2master.steampowered.com:27011', REGIONS.ALL, { appid: 221100, password: 0, empty: 1 }, 5000, 500);
+        const newServerAddresses = await filterNewServers(serverAddresses);
+        const insertedCount = await insertNewServers(newServerAddresses, app);
 
-        const existingAddresses = await db.select({ address: serversTable.address }).from(serversTable).where(inArray(serversTable.address, serverAddresses));
-        const existingAddressSet = new Set(existingAddresses.map((row) => row.address));
-
-        const newServerAddresses = serverAddresses.filter((addr) => !existingAddressSet.has(addr));
-        const newServerRecords = newServerAddresses.map((address) => ({
-            address,
-            status: 'pending' as const,
-        }));
-
-        let insertedCount = 0;
-        if (newServerRecords.length > 0) {
-            await db.insert(serversTable).values(newServerRecords);
-            insertedCount = newServerRecords.length;
-        }
-
-        const skippedCount = serverAddresses.length - insertedCount;
-
-        app.log.info('Server discovery completed', {
+        const result = {
             discovered: serverAddresses.length,
             new: insertedCount,
-            existing: skippedCount,
-        });
-
-        return {
-            discovered: serverAddresses.length,
-            new: insertedCount,
-            existing: skippedCount,
+            existing: serverAddresses.length - insertedCount,
         };
+
+        app.log.info(`Server discovery completed: ${insertedCount} new, ${result.existing} existing, ${serverAddresses.length} total`);
+        return result;
     } catch (error) {
-        app.log.error(error, 'Failed to discover servers');
+        app.log.error(error, 'Server discovery failed');
         throw error;
     }
+}
+
+async function filterNewServers(serverAddresses: string[]): Promise<string[]> {
+    if (serverAddresses.length === 0) return [];
+
+    const existingAddresses = await db.select({ address: serversTable.address }).from(serversTable);
+
+    const existingAddressSet = new Set(existingAddresses.map((server) => server.address));
+    return serverAddresses.filter((address) => !existingAddressSet.has(address));
+}
+
+async function insertNewServers(addresses: string[], app: FastifyInstance): Promise<number> {
+    if (addresses.length === 0) {
+        return 0;
+    }
+
+    const newServerRecords: NewServer[] = addresses.map((address) => ({
+        address,
+        status: 'pending' as const,
+    }));
+
+    let insertedCount = 0;
+    const totalBatches = Math.ceil(newServerRecords.length / BATCH_SIZE);
+
+    for (let i = 0; i < newServerRecords.length; i += BATCH_SIZE) {
+        const batch = newServerRecords.slice(i, i + BATCH_SIZE);
+        const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
+
+        await db
+            .insert(serversTable)
+            .values(batch)
+            .onDuplicateKeyUpdate({
+                set: { updated_at: new Date() },
+            });
+
+        insertedCount += batch.length;
+
+        if (currentBatch < totalBatches) {
+            await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY));
+        }
+    }
+
+    app.log.info(`Inserted ${insertedCount} new servers in ${totalBatches} batches`);
+    return insertedCount;
 }

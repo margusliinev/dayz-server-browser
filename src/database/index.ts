@@ -4,7 +4,7 @@ import mysql from 'mysql2/promise';
 
 const pool = mysql.createPool({
     uri: process.env.DATABASE_URL,
-    connectionLimit: 10,
+    connectionLimit: 30,
 });
 
 const db = drizzle({ client: pool });
