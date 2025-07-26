@@ -1,10 +1,10 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { Type } from '@sinclair/typebox';
 import { updateServerDetails } from '../crons/update-server-details.ts';
-import { eq, like, and, gte, lte, sql, or } from 'drizzle-orm';
 import { findNewServers } from '../crons/find-new-servers.ts';
 import { serversTable } from '../database/schema.ts';
 import { db } from '../database/index.ts';
+import { Type } from '@sinclair/typebox';
+import { eq, or } from 'drizzle-orm';
 
 const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
     app.get('/servers', {
@@ -57,92 +57,6 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
                 return reply.status(500).send({
                     success: false,
                     error: 'Failed to fetch server',
-                });
-            }
-        },
-    });
-
-    app.get('/servers/search', {
-        schema: {
-            querystring: Type.Object({
-                q: Type.String({ minLength: 1 }),
-            }),
-        },
-        handler: async (request, reply) => {
-            try {
-                const { q } = request.query as { q: string };
-                const searchTerm = `%${q}%`;
-
-                const servers = await db
-                    .select()
-                    .from(serversTable)
-                    .where(
-                        and(eq(serversTable.status, 'online'), sql`(${serversTable.name} LIKE ${searchTerm} OR ${serversTable.map} LIKE ${searchTerm} OR ${serversTable.address} LIKE ${searchTerm})`),
-                    );
-
-                return reply.status(200).send({
-                    success: true,
-                    data: servers,
-                });
-            } catch (error) {
-                request.log.error(error, 'Failed to search servers');
-                return reply.status(500).send({
-                    success: false,
-                    error: 'Failed to search servers',
-                });
-            }
-        },
-    });
-
-    app.get('/servers/filter', {
-        schema: {
-            querystring: Type.Object({
-                status: Type.Optional(Type.Union([Type.Literal('pending'), Type.Literal('online'), Type.Literal('offline')])),
-                map: Type.Optional(Type.String()),
-                minPlayers: Type.Optional(Type.Number({ minimum: 0 })),
-                maxPlayers: Type.Optional(Type.Number({ minimum: 0 })),
-            }),
-        },
-        handler: async (request, reply) => {
-            try {
-                const { status, map, minPlayers, maxPlayers } = request.query as {
-                    status?: 'pending' | 'online' | 'offline';
-                    map?: string;
-                    minPlayers?: number;
-                    maxPlayers?: number;
-                };
-
-                const conditions = [];
-
-                if (status) {
-                    conditions.push(eq(serversTable.status, status));
-                }
-
-                if (map) {
-                    conditions.push(like(serversTable.map, `%${map}%`));
-                }
-
-                if (minPlayers !== undefined) {
-                    conditions.push(gte(serversTable.players, minPlayers));
-                }
-
-                if (maxPlayers !== undefined) {
-                    conditions.push(lte(serversTable.players, maxPlayers));
-                }
-
-                const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-                const servers = await db.select().from(serversTable).where(whereClause);
-
-                return reply.status(200).send({
-                    success: true,
-                    data: servers,
-                });
-            } catch (error) {
-                request.log.error(error, 'Failed to filter servers');
-                return reply.status(500).send({
-                    success: false,
-                    error: 'Failed to filter servers',
                 });
             }
         },
