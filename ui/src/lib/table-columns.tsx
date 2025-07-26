@@ -8,10 +8,14 @@ export const columns = [
     columnHelper.accessor('name', {
         header: 'Server Name',
         cell: (info) => <div className='font-medium text-foreground'>{info.getValue() || 'Unknown Server'}</div>,
+        enableSorting: true,
+        sortingFn: 'alphanumeric',
     }),
     columnHelper.accessor('map', {
         header: 'Map',
         cell: (info) => <div className='text-gray-300'>{info.getValue() || 'Unknown'}</div>,
+        enableSorting: true,
+        sortingFn: 'alphanumeric',
     }),
     columnHelper.accessor('players', {
         header: 'Players',
@@ -33,6 +37,12 @@ export const columns = [
                 </div>
             );
         },
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+            const playersA = (rowA.getValue('players') as number) || 0;
+            const playersB = (rowB.getValue('players') as number) || 0;
+            return playersA - playersB;
+        },
     }),
     columnHelper.accessor('status', {
         header: 'Status',
@@ -45,6 +55,13 @@ export const columns = [
             };
 
             return <span className={`px-2 py-1 rounded-md text-xs font-medium border ${statusColors[status]}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+        },
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+            const statusOrder = { online: 2, pending: 1, offline: 0 };
+            const statusA = statusOrder[rowA.getValue('status') as keyof typeof statusOrder];
+            const statusB = statusOrder[rowB.getValue('status') as keyof typeof statusOrder];
+            return statusA - statusB;
         },
     }),
     columnHelper.accessor('address', {
@@ -59,5 +76,7 @@ export const columns = [
                 </div>
             );
         },
+        enableSorting: true,
+        sortingFn: 'alphanumeric',
     }),
 ];

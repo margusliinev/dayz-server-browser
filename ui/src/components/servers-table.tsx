@@ -1,12 +1,13 @@
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import type { Server } from '@backend/database/schema';
 import { columns } from '@/lib/table-columns';
+import { TableHeaderCell, TableEmptyState } from '@/components/ui';
 
-interface ServersTableProps {
+interface ServerTableProps {
     servers: Server[];
 }
 
-export function ServersTable({ servers }: ServersTableProps) {
+export function ServerTable({ servers }: ServerTableProps) {
     const table = useReactTable({
         data: servers,
         columns,
@@ -30,9 +31,7 @@ export function ServersTable({ servers }: ServersTableProps) {
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id} className='border-b border-gray-800'>
                                 {headerGroup.headers.map((header) => (
-                                    <th key={header.id} className='px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider bg-gray-800/50'>
-                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                    </th>
+                                    <TableHeaderCell key={header.id} header={header} />
                                 ))}
                             </tr>
                         ))}
@@ -51,13 +50,7 @@ export function ServersTable({ servers }: ServersTableProps) {
                 </table>
             </div>
 
-            {servers.length === 0 && (
-                <div className='text-center py-12'>
-                    <div className='text-4xl mb-4'>🔍</div>
-                    <h3 className='text-lg font-medium text-foreground mb-2'>No servers found</h3>
-                    <p className='text-gray-400'>Check back later for available servers.</p>
-                </div>
-            )}
+            {servers.length === 0 && <TableEmptyState message='No servers found' />}
         </div>
     );
 }

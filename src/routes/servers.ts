@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import { updateServerDetails } from '../crons/update-server-details.ts';
-import { eq, like, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, like, and, gte, lte, sql, or } from 'drizzle-orm';
 import { findNewServers } from '../crons/find-new-servers.ts';
 import { serversTable } from '../database/schema.ts';
 import { db } from '../database/index.ts';
@@ -10,14 +10,17 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
     app.get('/servers', {
         handler: async (request, reply) => {
             try {
-                const onlineServers = await db.select().from(serversTable).where(eq(serversTable.status, 'online'));
+                const notPendingServers = await db
+                    .select()
+                    .from(serversTable)
+                    .where(or(eq(serversTable.status, 'online'), eq(serversTable.status, 'offline')));
 
                 return reply.status(200).send({
                     success: true,
-                    data: onlineServers,
+                    data: notPendingServers,
                 });
             } catch (error) {
-                request.log.error(error, 'Failed to fetch online servers');
+                request.log.error(error, 'Failed to fetch servers');
                 return reply.status(500).send({
                     success: false,
                     error: 'Failed to fetch servers',

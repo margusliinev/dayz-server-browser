@@ -1,2 +1,2 @@
 export { Header } from './header';
-export { ServersTable } from './servers-table';
+export { ServerTable } from './servers-table';

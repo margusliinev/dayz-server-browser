@@ -5,7 +5,7 @@ import { app } from '../setup.ts';
 import assert from 'node:assert';
 
 describe('GET /api/servers', () => {
-    test('should return 200 response with success true and array of online servers only', async () => {
+    test('should return 200 response with success true and array of online/offline servers only', async () => {
         await db.delete(serversTable);
         await db.insert(serversTable).values([
             {
@@ -23,7 +23,7 @@ describe('GET /api/servers', () => {
                 address: '193.25.252.82:27016',
                 players: 75,
                 maxPlayers: 80,
-                status: 'online',
+                status: 'offline',
                 queried_at: new Date('2025-01-01T13:00:00Z'),
             },
             {
@@ -32,7 +32,7 @@ describe('GET /api/servers', () => {
                 address: '192.168.1.2:27016',
                 players: 0,
                 maxPlayers: 50,
-                status: 'offline',
+                status: 'pending',
                 queried_at: new Date('2025-01-01T10:00:00Z'),
             },
         ]);
@@ -48,12 +48,13 @@ describe('GET /api/servers', () => {
         assert.strictEqual(body.success, true);
         assert.strictEqual(body.data.length, 2);
 
-        body.data.forEach((server: any) => {
-            assert.strictEqual(server.status, 'online');
-        });
+        assert.strictEqual(body.data[0].name, 'Test Server 1');
+        assert.strictEqual(body.data[0].status, 'online');
+        assert.strictEqual(body.data[1].name, 'Test Server 2');
+        assert.strictEqual(body.data[1].status, 'offline');
     });
 
-    test('should return empty array when no online servers exist', async () => {
+    test('should return empty array when no online/offline servers exist', async () => {
         await db.delete(serversTable);
         await db.insert(serversTable).values([
             {
@@ -62,7 +63,7 @@ describe('GET /api/servers', () => {
                 address: '192.168.1.1:27016',
                 players: 0,
                 maxPlayers: 60,
-                status: 'offline',
+                status: 'pending',
                 queried_at: new Date('2025-01-01T12:00:00Z'),
             },
             {
