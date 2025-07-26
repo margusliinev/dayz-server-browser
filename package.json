@@ -21,6 +21,7 @@
         "build": "tsc",
         "start": "node --env-file=.env build/index.js",
         "test": "node --env-file=.env.test --test-global-setup=./test/setup.ts --test 'test/**/*.test.ts'",
+        "test:coverage": "node --env-file=.env.test --test-global-setup=./test/setup.ts --test --experimental-test-coverage 'test/**/*.test.ts' ",
         "format": "prettier --write .",
         "db:generate": "drizzle-kit generate",
         "db:migrate": "drizzle-kit migrate",
