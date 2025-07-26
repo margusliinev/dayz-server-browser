@@ -26,14 +26,16 @@ async function runMigrations() {
             uri: process.env.DATABASE_URL,
             connectionLimit: 1,
         });
-
         const db = drizzle({ client });
+
+        console.info('🚧 Database migrations started');
         await migrate(db, { migrationsFolder: './src/database/migrations' });
-        console.log('Migrations completed successfully');
+        console.info('✅ Database migrations completed');
 
         await client.end();
     } catch (error) {
-        console.error('Error running migrations:', error);
+        console.error('❌ Database migrations failed');
+        throw error;
     }
 }
 
