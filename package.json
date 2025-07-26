@@ -22,11 +22,15 @@
         "start": "node --env-file=.env build/index.js",
         "test": "node --env-file=.env --test 'test/**/*.test.ts'",
         "test:coverage": "node --test --experimental-test-coverage 'test/**/*.test.ts'",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate"
     },
     "dependencies": {
         "@fastify/autoload": "6.3.1",
         "@sinclair/typebox": "0.34.38",
+        "drizzle-kit": "0.31.4",
+        "drizzle-orm": "0.44.3",
         "fastify": "5.4.0",
         "mysql2": "3.14.2"
     },

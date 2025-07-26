@@ -10,7 +10,9 @@ const __dirname = dirname(__filename);
 
 export async function buildApp({ isTest }: { isTest: boolean }): Promise<FastifyInstance> {
     if (isTest) {
+        process.env.PORT = '4000';
         process.env.NODE_ENV = 'test';
+        process.env.DATABASE_URL = 'mysql://user:password@localhost:3307/db_test';
     }
 
     const app = fastify({ logger, disableRequestLogging: true });

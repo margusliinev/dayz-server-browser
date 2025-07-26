@@ -7,7 +7,6 @@ const ServerSchema = Type.Object({
     players: Type.Number(),
     maxPlayers: Type.Number(),
     map: Type.String(),
-    status: Type.String(),
 });
 
 const ServersResponseSchema = Type.Object({
