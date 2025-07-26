@@ -1,10 +1,8 @@
 import { getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
-import { useState, useMemo } from 'react';
-import { Pagination } from '@/components/ui/pagination';
-import { ServerTableFilter } from '@/components/ui/server-table-filter';
-import type { Server } from '@backend/database/schema';
+import { useState, useMemo, useCallback } from 'react';
+import { Pagination, ServerTableFilter, TableEmptyState, ServerTableBody } from '@/components/ui';
 import { columns } from '@/components/ui/table-columns';
-import { TableEmptyState, ServerTableBody } from '@/components/ui';
+import type { Server } from '@backend/database/schema';
 
 interface ServerTableProps {
     servers: Server[];
@@ -17,51 +15,35 @@ export function ServerTable({ servers }: ServerTableProps) {
     const [minPlayers, setMinPlayers] = useState<number | ''>('');
     const [maxPlayers, setMaxPlayers] = useState<number | ''>('');
     const pageSize = 15;
+    const tableColumns = useMemo(() => columns, []);
 
     const filteredServers = useMemo(() => {
         let result = servers;
         if (filter.trim()) {
-            result = result.filter((s) => s.name?.toLowerCase().includes(filter.trim().toLowerCase()));
+            result = result.filter((s: Server) => s.name?.toLowerCase().includes(filter.trim().toLowerCase()));
         }
         if (minPlayers !== '') {
-            result = result.filter((s) => (typeof s.players === 'number' ? s.players >= minPlayers : false));
+            result = result.filter((s: Server) => (typeof s.players === 'number' ? s.players >= minPlayers : false));
         }
         if (maxPlayers !== '') {
-            result = result.filter((s) => (typeof s.players === 'number' ? s.players <= maxPlayers : false));
+            result = result.filter((s: Server) => (typeof s.players === 'number' ? s.players <= maxPlayers : false));
         }
+
+        result = [...result].sort((a, b) => (b.players ?? 0) - (a.players ?? 0));
         return result;
     }, [servers, filter, minPlayers, maxPlayers]);
 
-    const sortingTable = useReactTable({
-        data: filteredServers,
-        columns,
-        state: { sorting },
-        onSortingChange: setSorting,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        manualPagination: true,
-        manualSorting: false,
-        initialState: {
-            sorting: [
-                {
-                    id: 'players',
-                    desc: true,
-                },
-            ],
-        },
-    });
-
-    const sortedServers = sortingTable.getSortedRowModel().rows.map((row) => row.original);
-    const totalPages = Math.max(1, Math.ceil(sortedServers.length / pageSize));
+    const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredServers.length / pageSize)), [filteredServers.length, pageSize]);
+    if (page > totalPages) setPage(1);
 
     const paginatedServers = useMemo(() => {
         const start = (page - 1) * pageSize;
-        return sortedServers.slice(start, start + pageSize);
-    }, [sortedServers, page]);
+        return filteredServers.slice(start, start + pageSize);
+    }, [filteredServers, page, pageSize]);
 
     const table = useReactTable({
         data: paginatedServers,
-        columns,
+        columns: tableColumns,
         state: { sorting },
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
@@ -78,37 +60,38 @@ export function ServerTable({ servers }: ServerTableProps) {
         },
     });
 
-    if (page > totalPages) setPage(1);
+    const handleFilterChange = useCallback((val: string) => {
+        setFilter(val);
+        setPage(1);
+    }, []);
+    const handleMinPlayersChange = useCallback((val: number | '') => {
+        setMinPlayers(val);
+        setPage(1);
+    }, []);
+    const handleMaxPlayersChange = useCallback((val: number | '') => {
+        setMaxPlayers(val);
+        setPage(1);
+    }, []);
+    const handleClear = useCallback(() => {
+        setFilter('');
+        setMinPlayers('');
+        setMaxPlayers('');
+        setPage(1);
+    }, []);
 
     return (
         <div className='bg-gray-900 rounded-lg border border-gray-800 overflow-hidden'>
             <ServerTableFilter
                 value={filter}
-                onChange={(val) => {
-                    setFilter(val);
-                    setPage(1);
-                }}
+                onChange={handleFilterChange}
                 minPlayers={minPlayers}
                 maxPlayers={maxPlayers}
-                onMinPlayersChange={(val) => {
-                    setMinPlayers(val);
-                    setPage(1);
-                }}
-                onMaxPlayersChange={(val) => {
-                    setMaxPlayers(val);
-                    setPage(1);
-                }}
-                onClear={() => {
-                    setFilter('');
-                    setMinPlayers('');
-                    setMaxPlayers('');
-                    setPage(1);
-                }}
+                onMinPlayersChange={handleMinPlayersChange}
+                onMaxPlayersChange={handleMaxPlayersChange}
+                onClear={handleClear}
             />
             <ServerTableBody table={table} />
-
             <Pagination page={page} totalPages={totalPages} onPrev={() => setPage((p) => Math.max(1, p - 1))} onNext={() => setPage((p) => Math.min(totalPages, p + 1))} />
-
             {table.getRowModel().rows.length === 0 && <TableEmptyState message='No servers found' />}
         </div>
     );
