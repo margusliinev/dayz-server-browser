@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { queryMasterServer, REGIONS } from 'steam-server-query';
 import { serversTable } from '../database/schema.ts';
 import { db } from '../database/index.ts';
+import { inArray } from 'drizzle-orm';
 
 const discoverServers: FastifyPluginAsync = async (app: FastifyInstance) => {
     app.get('/discover-servers', {
@@ -14,28 +15,24 @@ const discoverServers: FastifyPluginAsync = async (app: FastifyInstance) => {
                 // Empty 1 means servers that are not empty
                 // 5000 is the timeout in milliseconds
                 // 500 is the maximum number of servers to return
-                const serverAddresses = await queryMasterServer('hl2master.steampowered.com:27011', REGIONS.ALL, { appid: 221100, password: 0, empty: 1 }, 5000, 500);
+                const serverAddresses = await queryMasterServer('hl2master.steampowered.com:27011', REGIONS.ALL, { appid: 221100, password: 0, empty: 1 }, 5000, 100);
 
-                const newServers = serverAddresses.map((address) => ({
+                const existingAddresses = await db.select({ address: serversTable.address }).from(serversTable).where(inArray(serversTable.address, serverAddresses));
+
+                const existingAddressSet = new Set(existingAddresses.map((row) => row.address));
+                const newServerAddresses = serverAddresses.filter((addr) => !existingAddressSet.has(addr));
+                const newServerRecords = newServerAddresses.map((address) => ({
                     address,
                     status: 'pending' as const,
                 }));
 
                 let insertedCount = 0;
-                let skippedCount = 0;
-
-                for (const server of newServers) {
-                    try {
-                        await db.insert(serversTable).values(server);
-                        insertedCount++;
-                    } catch (error: any) {
-                        if (error.code === 'ER_DUP_ENTRY' || error.errno === 1062) {
-                            skippedCount++;
-                        } else {
-                            throw error;
-                        }
-                    }
+                if (newServerRecords.length > 0) {
+                    await db.insert(serversTable).values(newServerRecords);
+                    insertedCount = newServerRecords.length;
                 }
+
+                const skippedCount = serverAddresses.length - insertedCount;
 
                 return {
                     success: true,

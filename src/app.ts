@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { runMigrations } from './database/index.ts';
-import { logger } from './helpers/logger.ts';
+import { loggerConfig } from './helpers/logger.ts';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import autoload from '@fastify/autoload';
@@ -12,7 +12,12 @@ const __dirname = dirname(__filename);
 export async function buildApp(): Promise<FastifyInstance> {
     await runMigrations();
 
-    const app = fastify({ logger, disableRequestLogging: true });
+    const app = fastify({
+        logger: loggerConfig,
+        disableRequestLogging: true,
+        requestIdLogLabel: 'request_id',
+        genReqId: () => crypto.randomUUID(),
+    });
 
     await app.register(autoload, {
         dir: join(__dirname, 'routes'),

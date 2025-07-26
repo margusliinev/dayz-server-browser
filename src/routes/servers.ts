@@ -33,6 +33,8 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
             try {
                 const onlineServers = await db.select().from(serversTable).where(eq(serversTable.status, 'online'));
 
+                request.log.info(`Fetched ${onlineServers.length} online servers`);
+
                 return reply.status(200).send({
                     success: true,
                     data: onlineServers,

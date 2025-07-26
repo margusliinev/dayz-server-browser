@@ -2,11 +2,12 @@ import { migrate } from 'drizzle-orm/mysql2/migrator';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 
-const client = await mysql.createConnection({
+const pool = mysql.createPool({
     uri: process.env.DATABASE_URL,
+    connectionLimit: 10,
 });
 
-const db = drizzle({ client });
+const db = drizzle({ client: pool });
 
 async function runMigrations() {
     let migrationClient: mysql.Connection | undefined;
@@ -30,4 +31,4 @@ async function runMigrations() {
     }
 }
 
-export { db, client, runMigrations };
+export { db, pool, runMigrations };

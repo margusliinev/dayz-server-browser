@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { client } from '../src/database/index.ts';
+import { pool } from '../src/database/index.ts';
 import { before, after } from 'node:test';
 import { buildApp } from '../src/app.ts';
 
@@ -11,7 +11,7 @@ before(async () => {
 
 after(async () => {
     await app.close();
-    await client.end();
+    await pool.end();
 });
 
 export { app };
