@@ -1,13 +1,12 @@
-import { test, describe, beforeEach } from 'node:test';
+import { test, describe } from 'node:test';
 import { serversTable } from '../../src/database/schema.ts';
 import { db } from '../../src/database/index.ts';
 import { app } from '../setup.ts';
 import assert from 'node:assert';
 
 describe('GET /api/servers', () => {
-    beforeEach(async () => {
+    test('should return 200 response with success true and array of online servers only', async () => {
         await db.delete(serversTable);
-
         await db.insert(serversTable).values([
             {
                 map: 'Chernarus',
@@ -37,9 +36,7 @@ describe('GET /api/servers', () => {
                 queried_at: new Date('2025-01-01T10:00:00Z'),
             },
         ]);
-    });
 
-    test('should return 200 response with success true and array of online servers only', async () => {
         const response = await app.inject({
             method: 'GET',
             url: '/api/servers',
