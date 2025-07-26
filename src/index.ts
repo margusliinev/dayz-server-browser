@@ -1,7 +1,9 @@
 import { buildApp } from './app.ts';
+import { runMigrations } from './database/index.ts';
 
 const start = async () => {
     try {
+        await runMigrations();
         const PORT = parseInt(process.env.PORT || '3000');
 
         const app = await buildApp();

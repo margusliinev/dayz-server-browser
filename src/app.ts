@@ -1,5 +1,4 @@
 import type { FastifyInstance } from 'fastify';
-import { runMigrations } from './database/index.ts';
 import { loggerConfig } from './helpers/logger.ts';
 import { registerCrons } from './crons/index.ts';
 import { dirname, join } from 'path';
@@ -12,8 +11,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export async function buildApp(): Promise<FastifyInstance> {
-    await runMigrations();
-
     const app = fastify({
         logger: loggerConfig,
         disableRequestLogging: true,

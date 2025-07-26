@@ -2,7 +2,7 @@ import pino from 'pino';
 
 export const loggerConfig = {
     base: null,
-    level: process.env.NODE_ENV === 'test' ? 'silent' : 'info',
+    level: 'info',
     timestamp: pino.stdTimeFunctions.isoTime,
     formatters: { level: (label: string) => ({ level: label }) },
     transport: {

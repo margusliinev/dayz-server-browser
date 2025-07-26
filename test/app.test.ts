@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import { app } from './setup.ts';
 import assert from 'node:assert';
 
-describe('App', () => {
+describe('App', async () => {
     test('should return 404 response with success false and not found', async () => {
         const response = await app.inject({
             method: 'GET',
