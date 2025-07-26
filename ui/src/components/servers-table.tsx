@@ -1,6 +1,6 @@
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import type { Server } from '@backend/database/schema';
-import { columns } from '@/lib/table-columns';
+import { columns } from '@/components/ui/table-columns';
 import { TableHeaderCell, TableEmptyState } from '@/components/ui';
 
 interface ServerTableProps {
@@ -24,23 +24,23 @@ export function ServerTable({ servers }: ServerTableProps) {
     });
 
     return (
-        <div className='bg-gray-900/50 rounded-lg border border-gray-800 overflow-hidden'>
+        <div className='bg-gray-900 rounded-lg border border-gray-800 overflow-hidden'>
             <div className='overflow-x-auto'>
                 <table className='w-full'>
                     <thead>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <tr key={headerGroup.id} className='border-b border-gray-800'>
+                            <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <TableHeaderCell key={header.id} header={header} />
                                 ))}
                             </tr>
                         ))}
                     </thead>
-                    <tbody className='divide-y divide-gray-800'>
-                        {table.getRowModel().rows.map((row) => (
-                            <tr key={row.id} className='hover:bg-gray-800/30 transition-colors cursor-pointer'>
+                    <tbody>
+                        {table.getRowModel().rows.map((row, idx, arr) => (
+                            <tr key={row.id} className={`bg-gray-900 hover:bg-gray-800 transition-colors cursor-pointer`}>
                                 {row.getVisibleCells().map((cell) => (
-                                    <td key={cell.id} className='px-6 py-4 whitespace-nowrap'>
+                                    <td key={cell.id} className={`px-6 py-4 whitespace-nowrap${idx < arr.length - 1 ? ' border-b border-gray-800' : ''}`}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </td>
                                 ))}
