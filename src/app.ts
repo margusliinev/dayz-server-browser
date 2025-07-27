@@ -58,6 +58,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     }
 
     app.setNotFoundHandler((request, reply) => {
+        if (!request.url.startsWith('/api')) {
+            return reply.sendFile('index.html');
+        }
+
         request.log.warn('Not Found: %s', request.raw.url);
 
         return reply.status(404).send({

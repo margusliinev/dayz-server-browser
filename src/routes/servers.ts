@@ -1,11 +1,12 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import type { Server } from '../database/schema.ts';
 import { serversTable } from '../database/schema.ts';
 import { db } from '../database/index.ts';
 import { Type } from '@sinclair/typebox';
 import { eq, or } from 'drizzle-orm';
 
 const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
-    let cachedServers: any = null;
+    let cachedServers: Server[] | null = null;
     let cacheTimestamp = 0;
     const CACHE_TTL_MS = 10 * 1000;
 
@@ -43,7 +44,7 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
         },
     });
 
-    const serverIdCache: Map<number, { data: any; timestamp: number }> = new Map();
+    const serverIdCache: Map<number, { data: Server | null | undefined; timestamp: number }> = new Map();
 
     app.get('/servers/:id', {
         schema: {

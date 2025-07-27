@@ -28,21 +28,14 @@ export function ServerTable({ servers }: ServerTableProps) {
         if (maxPlayers !== '') {
             result = result.filter((s: Server) => (typeof s.players === 'number' ? s.players <= maxPlayers : false));
         }
-
-        result = [...result].sort((a, b) => (b.players ?? 0) - (a.players ?? 0));
         return result;
     }, [servers, filter, minPlayers, maxPlayers]);
 
     const totalPages = useMemo(() => Math.max(1, Math.ceil(filteredServers.length / pageSize)), [filteredServers.length, pageSize]);
     if (page > totalPages) setPage(1);
 
-    const paginatedServers = useMemo(() => {
-        const start = (page - 1) * pageSize;
-        return filteredServers.slice(start, start + pageSize);
-    }, [filteredServers, page, pageSize]);
-
     const table = useReactTable({
-        data: paginatedServers,
+        data: filteredServers,
         columns: tableColumns,
         state: { sorting },
         onSortingChange: setSorting,
@@ -59,6 +52,12 @@ export function ServerTable({ servers }: ServerTableProps) {
             ],
         },
     });
+
+    const sortedRows = table.getRowModel().rows;
+    const paginatedRows = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        return sortedRows.slice(start, start + pageSize);
+    }, [sortedRows, page, pageSize]);
 
     const handleFilterChange = useCallback((val: string) => {
         setFilter(val);
@@ -90,9 +89,9 @@ export function ServerTable({ servers }: ServerTableProps) {
                 onMaxPlayersChange={handleMaxPlayersChange}
                 onClear={handleClear}
             />
-            <ServerTableBody table={table} />
+            <ServerTableBody table={table} rows={paginatedRows} />
             <Pagination page={page} totalPages={totalPages} onPrev={() => setPage((p) => Math.max(1, p - 1))} onNext={() => setPage((p) => Math.min(totalPages, p + 1))} />
-            {table.getRowModel().rows.length === 0 && <TableEmptyState message='No servers found' />}
+            {paginatedRows.length === 0 && <TableEmptyState message='No servers found' />}
         </div>
     );
 }
