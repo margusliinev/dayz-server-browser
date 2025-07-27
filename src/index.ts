@@ -1,5 +1,5 @@
-import { buildApp } from './app.ts';
 import { runMigrations } from './database/index.ts';
+import { buildApp } from './app.ts';
 
 const start = async () => {
     try {

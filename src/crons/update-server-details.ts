@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
+import type { Server } from '../database/schema.ts';
 import { queryGameServerInfo } from 'steam-server-query';
-import { serversTable, type Server } from '../database/schema.ts';
+import { serversTable } from '../database/schema.ts';
 import { db } from '../database/index.ts';
 import { eq } from 'drizzle-orm';
 

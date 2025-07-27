@@ -17,7 +17,7 @@ const QUERY_FILTERS = {
     empty: 1 as const, // Non-empty servers
 };
 
-export async function findNewServers(app: FastifyInstance) {
+export async function dailyServerDiscovery(app: FastifyInstance) {
     try {
         const serverAddresses = await queryMasterServer(MASTER_SERVER_HOST, REGIONS.ALL, QUERY_FILTERS, QUERY_TIMEOUT, MAX_SERVERS);
 
