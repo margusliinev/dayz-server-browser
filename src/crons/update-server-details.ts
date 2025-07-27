@@ -46,7 +46,7 @@ async function processServerUpdates(servers: Server[], app: FastifyInstance) {
     };
 }
 
-async function updateSingleServer(server: Server): Promise<boolean> {
+async function updateSingleServer(server: Server) {
     const serverInfo = await queryGameServerInfo(server.address);
 
     if (!serverInfo) {
@@ -71,7 +71,7 @@ async function updateSingleServer(server: Server): Promise<boolean> {
     return true;
 }
 
-async function updateServerQueryTime(serverId: number): Promise<void> {
+async function updateServerQueryTime(serverId: number) {
     await db.update(serversTable).set({ queried_at: new Date() }).where(eq(serversTable.id, serverId));
 }
 

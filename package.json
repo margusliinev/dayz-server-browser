@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@fastify/autoload": "6.3.1",
+        "@fastify/static": "8.2.0",
         "@sinclair/typebox": "0.34.38",
         "drizzle-kit": "0.31.4",
         "drizzle-orm": "0.44.3",

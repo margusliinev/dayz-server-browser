@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import { findNewServers } from './find-new-servers.ts';
 import { updateServerDetails } from './update-server-details.ts';
+import { findNewServers } from './find-new-servers.ts';
 
 export function registerCrons(app: FastifyInstance) {
     return [

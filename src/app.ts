@@ -4,6 +4,7 @@ import { registerCrons } from './crons/index.ts';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import autoload from '@fastify/autoload';
+import fastifyStatic from '@fastify/static';
 import fastifyCron from 'fastify-cron';
 import fastify from 'fastify';
 
@@ -24,10 +25,25 @@ export async function buildApp(): Promise<FastifyInstance> {
     });
 
     if (process.env.NODE_ENV === 'production') {
+        app.register(fastifyStatic, {
+            root: join(__dirname, '..', 'ui', 'build'),
+            prefix: '/',
+            index: 'index.html',
+        });
+
         app.register(fastifyCron.default, {
             jobs: registerCrons(app),
         });
     }
+
+    app.setNotFoundHandler((request, reply) => {
+        request.log.warn('Not Found: %s', request.raw.url);
+
+        return reply.status(404).send({
+            success: false,
+            message: 'Not Found',
+        });
+    });
 
     app.setErrorHandler(async (error, request, reply) => {
         request.log.error(error);
@@ -38,13 +54,6 @@ export async function buildApp(): Promise<FastifyInstance> {
         return reply.status(statusCode).send({
             success: false,
             message,
-        });
-    });
-
-    app.setNotFoundHandler(async (_request, reply) => {
-        return reply.status(404).send({
-            success: false,
-            message: 'Not Found',
         });
     });
 
