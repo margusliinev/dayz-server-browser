@@ -5,14 +5,30 @@ import { Type } from '@sinclair/typebox';
 import { eq, or } from 'drizzle-orm';
 
 const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
+    let cachedServers: any = null;
+    let cacheTimestamp = 0;
+    const CACHE_TTL_MS = 10 * 1000;
+
     app.get('/servers', {
         handler: async (request, reply) => {
+            const now = Date.now();
+            if (cachedServers && now - cacheTimestamp < CACHE_TTL_MS) {
+                request.log.info('Servers Cache HIT');
+                return reply.status(200).send({
+                    success: true,
+                    data: cachedServers,
+                });
+            }
             try {
                 const notPendingServers = await db
                     .select()
                     .from(serversTable)
                     .where(or(eq(serversTable.status, 'online'), eq(serversTable.status, 'offline')));
 
+                cachedServers = notPendingServers;
+                cacheTimestamp = now;
+
+                request.log.info('Servers Cache MISS');
                 return reply.status(200).send({
                     success: true,
                     data: notPendingServers,
@@ -27,6 +43,8 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
         },
     });
 
+    const serverIdCache: Map<number, { data: any; timestamp: number }> = new Map();
+
     app.get('/servers/:id', {
         schema: {
             params: Type.Object({
@@ -34,9 +52,17 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
             }),
         },
         handler: async (request, reply) => {
+            const { id } = request.params as { id: number };
+            const now = Date.now();
+            const cached = serverIdCache.get(id);
+            if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+                request.log.info(`Server ${id} Cache HIT`);
+                return reply.status(200).send({
+                    success: true,
+                    data: cached.data,
+                });
+            }
             try {
-                const { id } = request.params as { id: number };
-
                 const server = await db.select().from(serversTable).where(eq(serversTable.id, id)).limit(1);
 
                 if (server.length === 0) {
@@ -46,6 +72,8 @@ const servers: FastifyPluginAsync = async (app: FastifyInstance) => {
                     });
                 }
 
+                serverIdCache.set(id, { data: server[0], timestamp: now });
+                request.log.info(`Server ${id} Cache MISS`);
                 return reply.status(200).send({
                     success: true,
                     data: server[0],
