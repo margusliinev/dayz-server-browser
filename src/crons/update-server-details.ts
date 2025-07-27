@@ -1,15 +1,13 @@
 import type { FastifyInstance } from 'fastify';
 import type { Server } from '../database/schema.ts';
 import { queryGameServerInfo } from 'steam-server-query';
-import { serversTable } from '../database/schema.ts';
-import { db } from '../database/index.ts';
-import { eq } from 'drizzle-orm';
+import { getServersToUpdate, updateServerDetailsById } from '../queries/index.ts';
 
 const BATCH_SIZE = 10;
 
 export async function updateServerDetails(app: FastifyInstance) {
     try {
-        const serversToUpdate = await db.select().from(serversTable).orderBy(serversTable.queried_at).limit(BATCH_SIZE);
+        const serversToUpdate = await getServersToUpdate(BATCH_SIZE);
 
         const result = await processServerUpdates(serversToUpdate, app);
 
@@ -35,7 +33,7 @@ async function processServerUpdates(servers: Server[], app: FastifyInstance) {
             }
         } catch (error) {
             app.log.warn(`Failed to update server ${server.address}: ${error}`);
-            await updateServerQueryTime(server.id);
+            await updateServerDetailsById(server.id, { queried_at: new Date() });
             failed++;
         }
     }
@@ -51,29 +49,22 @@ async function updateSingleServer(server: Server) {
     const serverInfo = await queryGameServerInfo(server.address);
 
     if (!serverInfo) {
-        await updateServerQueryTime(server.id);
+        await updateServerDetailsById(server.id, { queried_at: new Date() });
         return false;
     }
 
     const status = determineServerStatus(serverInfo.players);
 
-    await db
-        .update(serversTable)
-        .set({
-            map: serverInfo.map,
-            name: serverInfo.name,
-            players: serverInfo.players,
-            maxPlayers: serverInfo.maxPlayers,
-            status,
-            queried_at: new Date(),
-        })
-        .where(eq(serversTable.id, server.id));
+    await updateServerDetailsById(server.id, {
+        map: serverInfo.map,
+        name: serverInfo.name,
+        players: serverInfo.players,
+        maxPlayers: serverInfo.maxPlayers,
+        status,
+        queried_at: new Date(),
+    });
 
     return true;
-}
-
-async function updateServerQueryTime(serverId: number) {
-    await db.update(serversTable).set({ queried_at: new Date() }).where(eq(serversTable.id, serverId));
 }
 
 function determineServerStatus(playerCount: number): 'online' | 'offline' {

@@ -1,8 +1,7 @@
-import { queryMasterServer, REGIONS } from 'steam-server-query';
 import type { FastifyInstance } from 'fastify';
 import type { NewServer } from '../database/schema.ts';
-import { serversTable } from '../database/schema.ts';
-import { db } from '../database/index.ts';
+import { getExistingServerAddresses, insertNewServersBatch } from '../queries/index.ts';
+import { queryMasterServer, REGIONS } from 'steam-server-query';
 
 const MASTER_SERVER_HOST = 'hl2master.steampowered.com:27011';
 const DAYZ_APP_ID = 221100;
@@ -41,7 +40,7 @@ export async function dailyServerDiscovery(app: FastifyInstance) {
 async function filterNewServers(serverAddresses: string[]): Promise<string[]> {
     if (serverAddresses.length === 0) return [];
 
-    const existingAddresses = await db.select({ address: serversTable.address }).from(serversTable);
+    const existingAddresses = await getExistingServerAddresses();
 
     const existingAddressSet = new Set(existingAddresses.map((server) => server.address));
     return serverAddresses.filter((address) => !existingAddressSet.has(address));
@@ -64,12 +63,7 @@ async function insertNewServers(addresses: string[], app: FastifyInstance): Prom
         const batch = newServerRecords.slice(i, i + BATCH_SIZE);
         const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
 
-        await db
-            .insert(serversTable)
-            .values(batch)
-            .onDuplicateKeyUpdate({
-                set: { updated_at: new Date() },
-            });
+        await insertNewServersBatch(batch);
 
         insertedCount += batch.length;
 

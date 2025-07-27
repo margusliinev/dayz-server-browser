@@ -1,14 +1,15 @@
+import type { Server } from '@backend/database/schema';
+import { Pagination, ServerTableFilter, TableEmptyState, ServerTableBody } from '@/components/ui';
 import { getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { useState, useMemo, useCallback } from 'react';
-import { Pagination, ServerTableFilter, TableEmptyState, ServerTableBody } from '@/components/ui';
 import { columns } from '@/components/ui/table-columns';
-import type { Server } from '@backend/database/schema';
 
 interface ServerTableProps {
     servers: Server[];
+    onRefreshServer: (server: Server) => Promise<number>;
 }
 
-export function ServerTable({ servers }: ServerTableProps) {
+export function ServerTable({ servers, onRefreshServer }: ServerTableProps) {
     const [page, setPage] = useState(1);
     const [sorting, setSorting] = useState([{ id: 'players', desc: true }]);
     const [filter, setFilter] = useState('');
@@ -43,6 +44,7 @@ export function ServerTable({ servers }: ServerTableProps) {
         getSortedRowModel: getSortedRowModel(),
         manualPagination: true,
         manualSorting: false,
+        meta: { onRefreshServer },
         initialState: {
             sorting: [
                 {

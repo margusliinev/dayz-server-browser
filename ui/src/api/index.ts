@@ -27,3 +27,15 @@ export async function getServer(id: number): Promise<Server> {
     const data: SingleServerResponse = await response.json();
     return data.data;
 }
+
+export async function refreshServer(id: number): Promise<number> {
+    const response = await fetch(`/api/servers/${id}/refresh`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to refresh server with id ${id}`);
+    }
+    const data = await response.json();
+    return data.playerCount;
+}

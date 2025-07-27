@@ -1,8 +1,16 @@
-import { createColumnHelper } from '@tanstack/react-table';
 import type { Server } from '@backend/database/schema';
+import type { RowData } from '@tanstack/react-table';
+import { RefreshButton } from '@/components/ui/refresh-button';
+import { createColumnHelper } from '@tanstack/react-table';
 import { CopyButton } from '@/components/ui/copy-button';
 
 const columnHelper = createColumnHelper<Server>();
+
+declare module '@tanstack/table-core' {
+    interface TableMeta<TData extends RowData> {
+        onRefreshServer: (server: Server) => Promise<number>;
+    }
+}
 
 export const columns = [
     columnHelper.accessor('name', {
@@ -78,5 +86,15 @@ export const columns = [
         },
         enableSorting: true,
         sortingFn: 'alphanumeric',
+    }),
+    columnHelper.display({
+        id: 'refresh',
+        header: '',
+        cell: (info) => {
+            const refreshServer = info.table.options.meta!.onRefreshServer;
+            const server = info.row.original;
+            return <RefreshButton onRefresh={() => refreshServer(server)} />;
+        },
+        enableSorting: false,
     }),
 ];
