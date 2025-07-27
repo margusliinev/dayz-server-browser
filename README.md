@@ -11,7 +11,7 @@ The system consists of several components working together:
     - This process is subject to rate limits, so it may take some time for new or updated server data to appear.
 
 - **API:**
-    - The API serves requests from the frontend UI and other clients.
+    - The API serves requests for the frontend UI and other clients.
     - Most API endpoints simply query the database for server information collected by the background crons.
     - There is a special endpoint that allows users to request a refresh of the player count for a specific server. This operation is not heavily rate limited and provides near real-time player numbers.
 
