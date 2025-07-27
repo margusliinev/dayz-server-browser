@@ -14,7 +14,7 @@ export function registerCrons(app: FastifyInstance) {
             timeZone: 'UTC',
         },
         {
-            cronTime: '*/5 * * * *',
+            cronTime: '*/3 * * * *',
             onTick: async () => {
                 app.log.info('Running server details update cron job');
                 await updateServerDetails(app);

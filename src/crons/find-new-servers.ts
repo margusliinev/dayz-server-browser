@@ -7,7 +7,7 @@ import { db } from '../database/index.ts';
 const MASTER_SERVER_HOST = 'hl2master.steampowered.com:27011';
 const DAYZ_APP_ID = 221100;
 const QUERY_TIMEOUT = 5000;
-const MAX_SERVERS = 3000;
+const MAX_SERVERS = 5000;
 const BATCH_SIZE = 100;
 const BATCH_DELAY = 1000;
 
