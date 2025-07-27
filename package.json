@@ -18,7 +18,7 @@
     },
     "scripts": {
         "dev": "node --env-file=.env --watch src/index.ts",
-        "build": "tsc",
+        "build": "cd ui && npm ci && npm run build && cd .. && tsc",
         "start": "node build/index.js",
         "test": "node --env-file=.env.test --test-global-setup=./test/setup.ts --test 'test/**/*.test.ts'",
         "test:coverage": "node --env-file=.env.test --test-global-setup=./test/setup.ts --test --experimental-test-coverage 'test/**/*.test.ts' ",

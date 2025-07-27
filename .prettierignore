@@ -1,4 +1,5 @@
 node_modules
 build
 schema.ts
+migrations
 routeTree.gen.ts
