@@ -1,4 +1,4 @@
-# DayZ Server Browser API
+# DayZ Server Browser
 
 This project provides an API and a UI for browsing DayZ servers.
 
