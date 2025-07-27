@@ -7,6 +7,9 @@ import { randomUUID } from 'crypto';
 import autoload from '@fastify/autoload';
 import fastifyStatic from '@fastify/static';
 import fastifyCron from 'fastify-cron';
+import fastifyRateLimit from '@fastify/rate-limit';
+import fastifyCors from '@fastify/cors';
+import fastifyHelmet from '@fastify/helmet';
 import fastify from 'fastify';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +21,23 @@ export async function buildApp(): Promise<FastifyInstance> {
         disableRequestLogging: true,
         requestIdLogLabel: 'request_id',
         genReqId: () => randomUUID(),
+    });
+
+    await app.register(fastifyHelmet);
+    await app.register(fastifyCors, {
+        origin: 'https://dayz-server-browser.up.railway.app',
+    });
+
+    await app.register(fastifyRateLimit, {
+        max: 100,
+        timeWindow: '1 minute',
+        allowList: [],
+        ban: 2,
+        addHeaders: {
+            'x-ratelimit-limit': true,
+            'x-ratelimit-remaining': true,
+            'x-ratelimit-reset': true,
+        },
     });
 
     await app.register(autoload, {

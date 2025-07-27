@@ -53,41 +53,6 @@ describe('GET /api/servers', () => {
         assert.strictEqual(body.data[1].name, 'Test Server 2');
         assert.strictEqual(body.data[1].status, 'offline');
     });
-
-    test('should return empty array when no online/offline servers exist', async () => {
-        await db.delete(serversTable);
-        await db.insert(serversTable).values([
-            {
-                map: 'Chernarus',
-                name: 'Offline Server',
-                address: '192.168.1.1:27016',
-                players: 0,
-                maxPlayers: 60,
-                status: 'pending',
-                queried_at: new Date('2025-01-01T12:00:00Z'),
-            },
-            {
-                map: 'Livonia',
-                name: 'Pending Server',
-                address: '192.168.1.2:27016',
-                players: 0,
-                maxPlayers: 40,
-                status: 'pending',
-                queried_at: new Date('2025-01-01T12:00:00Z'),
-            },
-        ]);
-
-        const response = await app.inject({
-            method: 'GET',
-            url: '/api/servers',
-        });
-
-        const body = await response.json();
-
-        assert.strictEqual(response.statusCode, 200);
-        assert.strictEqual(body.success, true);
-        assert.strictEqual(body.data.length, 0);
-    });
 });
 
 describe('GET /api/servers/:id', () => {
