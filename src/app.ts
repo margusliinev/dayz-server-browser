@@ -3,6 +3,7 @@ import { loggerConfig } from './helpers/logger.ts';
 import { registerCrons } from './crons/index.ts';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
 import autoload from '@fastify/autoload';
 import fastifyStatic from '@fastify/static';
 import fastifyCron from 'fastify-cron';
@@ -16,7 +17,7 @@ export async function buildApp(): Promise<FastifyInstance> {
         logger: loggerConfig,
         disableRequestLogging: true,
         requestIdLogLabel: 'request_id',
-        genReqId: () => crypto.randomUUID(),
+        genReqId: () => randomUUID(),
     });
 
     await app.register(autoload, {
