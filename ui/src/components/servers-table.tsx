@@ -15,8 +15,8 @@ export function ServerTable({ servers, onRefreshServer }: ServerTableProps) {
     const [filter, setFilter] = useState('');
     const [minPlayers, setMinPlayers] = useState<number | ''>('');
     const [maxPlayers, setMaxPlayers] = useState<number | ''>('');
-    const pageSize = 15;
     const tableColumns = useMemo(() => columns, []);
+    const pageSize = 15;
 
     const filteredServers = useMemo(() => {
         let result = servers;

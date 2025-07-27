@@ -89,7 +89,7 @@ export const columns = [
     }),
     columnHelper.display({
         id: 'refresh',
-        header: '',
+        header: 'Refresh',
         cell: (info) => {
             const refreshServer = info.table.options.meta!.onRefreshServer;
             const server = info.row.original;
