@@ -16,7 +16,7 @@ export function registerCrons(app: FastifyInstance) {
         },
         {
             name: 'update-server-details',
-            cronTime: '*/10 * * * *',
+            cronTime: '*/20 * * * *',
             onTick: async () => {
                 app.log.info('Running update-server-details cron job');
                 await updateServerDetails(app);
